@@ -8,9 +8,10 @@ export class Scene2 extends Phaser.Scene{
     preload(){
         this.load.spritesheet('nave2','../public/img/nave2.png',{ frameWidth: 71, frameHeight: 62 });
         this.load.spritesheet('enemy2','../public/img/enemy2.png',{ frameWidth: 70, frameHeight: 62 });
+        this.load.image('boss','../public/img/naveGrande.png');
         this.load.image('noche', '../../public/img/nigth.png');
         this.load.image('fire', '../../public/img/yellow.png');
-        this.load.image('bigshoot', '../../public/img/nigshoot.png');
+        this.load.image('bigshoot', '../../public/img/bigshoot.png');
         
     }
 
@@ -26,12 +27,12 @@ export class Scene2 extends Phaser.Scene{
         });
 
         this.player = this.physics.add.sprite(100,100,'nave2');
+
         this.player.setCollideWorldBounds(true);
+
         particles.startFollow(this.player);
 
         //crea animaciones de la nave
-        
-
         this.anims.create({
             key: 'stand',
             frames: this.anims.generateFrameNumbers('nave2', { start: 0, end: 1 }),
@@ -47,12 +48,20 @@ export class Scene2 extends Phaser.Scene{
             frames: [ { key: 'nave2', frame: 4 } ],
             frameRate: 10,
         });
-        
-        
 
+        //crea al jefe
+        this.boss = this.physics.add.image(700,300, 'boss');
+
+        let bossVelocity = 150;
+
+        this.boss.setCollideWorldBounds(true);
+        this.boss.setVelocityY(bossVelocity);
+        this.boss.setBounce(1);
+    
+
+        
         this.cursors = this.input.keyboard.createCursorKeys();
 
-       
     }
 
     update() {
