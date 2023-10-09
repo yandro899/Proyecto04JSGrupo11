@@ -6,17 +6,26 @@ export class Scene2 extends Phaser.Scene{
     }
 
     preload(){
+        this.canvas = this.sys.game.canvas;
+        
         this.load.spritesheet('nave2','../public/img/nave2.png',{ frameWidth: 71, frameHeight: 62 });
         this.load.spritesheet('enemy2','../public/img/enemy2.png',{ frameWidth: 70, frameHeight: 62 });
         this.load.image('boss','../public/img/naveGrande.png');
         this.load.image('noche', '../../public/img/nigth.png');
         this.load.image('fire', '../../public/img/yellow.png');
         this.load.image('bigshoot', '../../public/img/bigshoot.png');
-        
+        this.load.image('bala', '../../public/img/shoot.png');
     }
 
     create(){
         this.add.image(400, 300, 'noche');
+
+        // Cooldowns
+        this.cooldownSuperBullet = {
+            cooldown:   5,
+            nextTimeShoot: 0
+        }
+        this.nextEnemySpawn = 0;
 
         //crea las particulas
         const particles = this.add.particles(-10, 0, 'fire', {
@@ -25,6 +34,31 @@ export class Scene2 extends Phaser.Scene{
             scale: { start: 1, end: 2 },
             blendMode: 'ADD'
         });
+        this.add.particles()
+        // balas
+        this.bullets = this.physics.add.group();
+        this.superBullets = this.physics.add.group();
+
+        // Enemigos basicos
+        this.enemies2 = this.physics.add.group();
+        
+        // Para obtener las teclas es 'keydown-[tecla]' donde se encuentra en
+        // https://newdocs.phaser.io/docs/3.60.0/Phaser.Input.Keyboard.KeyCodes
+
+        
+        this.input.keyboard.on('keydown-SPACE', ()=> {
+            let bala = this.bullets.create(this.player.x+10, this.player.y, 'bala');
+            bala.setVelocityX(500);
+        }, this);
+
+        this.input.keyboard.on('keydown-Z', ()=> {
+            let nextSuperBulletShoot = this.cooldownSuperBullet.nextTimeShoot;
+            if (nextSuperBulletShoot>this.game.getTime())
+                return;
+            let bala = this.superBullets.create(this.player.x+10, this.player.y, 'bigshoot');
+            this.cooldownSuperBullet.nextTimeShoot = this.cooldownSuperBullet.cooldown*1000+this.game.getTime();
+            bala.setVelocityX(200);
+        }, this);
 
         this.player = this.physics.add.sprite(100,100,'nave2');
 
@@ -49,8 +83,9 @@ export class Scene2 extends Phaser.Scene{
             frameRate: 10,
         });
 
+        // COMENTADO PARA AGREGAR MAS TARDE
         //crea al jefe
-        this.boss = this.physics.add.image(700,300, 'boss');
+        /*this.boss = this.physics.add.image(700,300, 'boss');
 
         let bossVelocity = 150;
 
@@ -61,10 +96,57 @@ export class Scene2 extends Phaser.Scene{
 
         
         this.cursors = this.input.keyboard.createCursorKeys();
+        */
+        
+        this.physics.add.collider(this.bullets, this.enemies2, (bala, enemigo)=>{
+            this.add.particles(bala.x, bala.y, 'fire', {
+                speed: 150,
+                scale: { start: 1, end: 1.5 },
+                blendMode: 'ADD',
+                duration: 200
+            });
+            bala.destroy();
+            enemigo.destroy();
 
+        }, null, this);
+        this.physics.add.collider(this.superBullets, this.enemies2, (bala, enemigo)=>{
+            enemigo.destroy();
+            bala.setVelocityX(200);
+            bala.setVelocityY(0);
+        }, null, this);
+
+        this.cursors = this.input.keyboard.createCursorKeys();
+        console.log(this.canvas.width);
     }
 
     update() {
+        // Las balas que salgan del mapa se borran
+        this.bullets.children.iterate((children)=>{
+            if(children && children.x > this.canvas.width)
+                children.destroy();
+        });
+
+        this.superBullets.children.iterate((children)=>{
+            if(children && children.x > this.canvas.width)
+                children.destroy();
+        });
+
+        // Think enemies
+        if (this.enemies2.countActive(true) < 10)
+        {
+            if (this.nextEnemySpawn <= this.game.getTime())
+            {
+                let enemy = this.enemies2.create(900, Phaser.Math.Between(100, 700), 'enemy2');
+                enemy.setVelocityX(-200)
+                this.nextEnemySpawn = this.game.getTime() + Phaser.Math.Between(50, 200)       
+            }
+        }
+        this.enemies2.children.iterate((children)=>{
+            if(children && children.x < -20)
+                children.destroy();
+        });
+
+        // Movimiento player
         let velocity = 200;
         if (this.cursors.left.isDown) {
             this.player.setVelocityX(-1*velocity);
