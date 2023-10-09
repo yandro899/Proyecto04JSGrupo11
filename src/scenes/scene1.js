@@ -11,31 +11,43 @@ export class Scene1 extends Phaser.Scene {
         this.load.image('fuego', '../../public/img/red.png');
         this.load.image('cielo', '../../public/img/sky.png');
         this.load.image('bala', '../../public/img/shoot.png');
+        this.load.image('enemigo', '../../public/img/enemy.png');
     }
 
     create() {
         this.add.image(400, 300, 'cielo');
-        this.balas = [];
+        //this.balas = [];
         const particles = this.add.particles(-10, 0, 'fuego', {
             speed: 100,
             angle: {min: 150, max: 210},
             scale: { start: 2, end: 0 },
             blendMode: 'ADD'
         });
+        //disparo al presiona la tecla SPACE
+        let balasGroup = this.physics.add.group();
+        this.input.keyboard.on('keydown-SPACE', ()=>{
+            this.crearBalas(this.bala, balasGroup);
+        }
 
-        this.input.keyboard.on('keydown-SPACE', ()=> {
-            console.log("HOLA");
-            let bala = this.physics.add.sprite(this.player.x+10, this.player.y, 'bala');
-            bala.setVelocityX(200);
-            this.balas.push(bala);
-        }, this);
+            //console.log("HOLA");
+            // let bala = this.physics.add.sprite(this.player.x+10, this.player.y, 'bala');
+            // bala.setVelocityX(300);
+            // this.balas.push(bala);
+            // this.balas.forEach(element, index => {
+            //     if (element.x <= 500) {
+            //         delete(element[index]);
+            //         console.log("bala eliminada");
+            //     }
+            // });
+        , this);
 
+
+        //creacion del player
         this.player = this.physics.add.sprite(100,100,'nave');
-
         this.player.setCollideWorldBounds(true);
-
+        //creacion de particulas que seguiran al player
         particles.startFollow(this.player);
-
+        //creacion de las animaciones del player
         this.anims.create({
             key: 'stand',
             frames: [ { key: 'nave', frame: 0 } ],
@@ -53,11 +65,21 @@ export class Scene1 extends Phaser.Scene {
         });
 
         this.cursors = this.input.keyboard.createCursorKeys();
+        //creacion de enemigos
+        this.crearEnemigos(this.enemy);
+
+        this.time.addEvent({
+            delay: 3000,
+            callback: this.crearEnemigos,
+            callbackScope: this,
+            repeat: -1
+        })
 
     }
 
     update() {
-        let velocity = 200;
+        //movimiento del player al presionar las flechas, arriba, abajo, izquierda y derecha
+        let velocity = 300;
         if (this.cursors.left.isDown) {
             this.player.setVelocityX(-1*velocity);
         }
@@ -77,14 +99,32 @@ export class Scene1 extends Phaser.Scene {
             this.player.setVelocityY(0);
             this.player.anims.play('stand', true);
         }
+        //hh
 
-        //this.input.keyboard.on('keydown-Space', ()=> {console.log("HOLA");}, this);
+    }
 
-        /* if (this.cursors.spacebar.isDown)
-        {
-            console.log("hola");
-        } */
+    crearEnemigos(enemy){
+        //console.log('hola');
+        for (let index = 0; index < 5; index++) {
 
+            let posicionXnave = 750;
+            let posicionYnave = Phaser.Math.Between(50, 550);
+            enemy = this.physics.add.sprite(posicionXnave, posicionYnave, 'enemigo');
+            enemy.setVelocityX(-200);
+        }
+    }
+    // eliminarEnemy(enemy, bala){
+    //     enemy.disableBody(true, true);
+    //     bala.disableBody(true, true);
+    // }
 
+    crearBalas(bala, balasGroup){
+        bala = balasGroup.create(this.player.x+10, this.player.y, 'bala');
+        bala.setVelocityX(300);
+        bala.checkWorldBounds = true;
+        bala.on('outOfBounds',()=>{
+            bala.destroy();
+        });
+        
     }
 }
