@@ -6,16 +6,22 @@ export class Scene2 extends Phaser.Scene{
     }
 
     preload(){
+        this.canvas = this.sys.game.canvas;
+        
         this.load.spritesheet('nave2','../public/img/nave2.png',{ frameWidth: 71, frameHeight: 62 });
         this.load.spritesheet('enemy2','../public/img/enemy2.png',{ frameWidth: 70, frameHeight: 62 });
         this.load.image('noche', '../../public/img/nigth.png');
         this.load.image('fire', '../../public/img/yellow.png');
-        this.load.image('bigshoot', '../../public/img/nigshoot.png');
-        
+        this.load.image('bigshoot', '../../public/img/bigshoot.png');
+        this.load.image('bala', '../../public/img/shoot.png');
     }
 
     create(){
         this.add.image(400, 300, 'noche');
+        this.cooldownSuperBullet = {
+            cooldown:   5,
+            nextTimeShoot: 0
+        }
 
         //crea las particulas
         const particles = this.add.particles(-10, 0, 'fire', {
@@ -24,6 +30,28 @@ export class Scene2 extends Phaser.Scene{
             scale: { start: 1, end: 2 },
             blendMode: 'ADD'
         });
+
+        // balas
+        this.bullets = this.physics.add.group();
+        this.superBullets = this.physics.add.group();
+        
+        // Para obtener las teclas es 'keydown-[tecla]' donde se encuentra en
+        // https://newdocs.phaser.io/docs/3.60.0/Phaser.Input.Keyboard.KeyCodes
+
+        
+        this.input.keyboard.on('keydown-SPACE', ()=> {
+            let bala = this.bullets.create(this.player.x+10, this.player.y, 'bala');
+            bala.setVelocityX(500);
+        }, this);
+
+        this.input.keyboard.on('keydown-Z', ()=> {
+            let nextSuperBulletShoot = this.cooldownSuperBullet.nextTimeShoot;
+            if (nextSuperBulletShoot>this.game.getTime())
+                return;
+            let bala = this.superBullets.create(this.player.x+10, this.player.y, 'bigshoot');
+            this.cooldownSuperBullet.nextTimeShoot = this.cooldownSuperBullet.cooldown*1000+this.game.getTime();
+            bala.setVelocityX(200);
+        }, this);
 
         this.player = this.physics.add.sprite(100,100,'nave2');
         this.player.setCollideWorldBounds(true);
@@ -51,11 +79,20 @@ export class Scene2 extends Phaser.Scene{
         
 
         this.cursors = this.input.keyboard.createCursorKeys();
-
-       
+        console.log(this.canvas.width);
     }
 
     update() {
+        this.bullets.children.iterate((children)=>{
+            if(children && children.x > this.canvas.width)
+                children.destroy();
+        });
+
+        this.superBullets.children.iterate((children)=>{
+            if(children && children.x > this.canvas.width)
+                children.destroy();
+        });
+
         let velocity = 200;
         if (this.cursors.left.isDown) {
             this.player.setVelocityX(-1*velocity);
