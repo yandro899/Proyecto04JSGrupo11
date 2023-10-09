@@ -92,10 +92,6 @@ export class Scene2 extends Phaser.Scene{
         this.boss.setCollideWorldBounds(true);
         this.boss.setVelocityY(bossVelocity);
         this.boss.setBounce(1);
-    
-
-        
-        this.cursors = this.input.keyboard.createCursorKeys();
         */
         
         this.physics.add.collider(this.bullets, this.enemies2, (bala, enemigo)=>{
@@ -116,7 +112,7 @@ export class Scene2 extends Phaser.Scene{
         }, null, this);
 
         this.cursors = this.input.keyboard.createCursorKeys();
-        console.log(this.canvas.width);
+        //console.log(this.canvas.width);
     }
 
     update() {
