@@ -1,5 +1,8 @@
 export class Scene2 extends Phaser.Scene{
 
+    vidaText="";
+    vidaBoss = 500;
+
     constructor()
     {
         super("Scene2");
@@ -85,7 +88,7 @@ export class Scene2 extends Phaser.Scene{
             frames: [ { key: 'nave2', frame: 4 } ],
             frameRate: 10,
         });
-        /*
+        
         // COMENTADO PARA AGREGAR MAS TARDE
         //crea al jefe
         
@@ -94,7 +97,10 @@ export class Scene2 extends Phaser.Scene{
         this.boss.setCollideWorldBounds(true);
         this.boss.setVelocityY(200);
         this.boss.setBounce(1);   
-        */
+
+        this.vidaText = this.add.text(16, 16, 'Vida: 0', { fontSize: '20px', fill: '#fff' });
+
+        
 
         //detecta las coliciones tre las balas y enemigos
         this.physics.add.collider(this.bullets, this.enemies2, (bala, enemigo)=>{
@@ -114,27 +120,28 @@ export class Scene2 extends Phaser.Scene{
             bala.setVelocityY(0);
         }, null, this);
 
-        /*
+        
         // colicion de las balas con el jefe y disminuye vida
-        let vidaBoss = 500;
         
         this.physics.add.collider(this.bullets, this.boss, (jefe, bala)=>{
-            vidaBoss -= 5;
-            console.log(vidaBoss);
+            this.vidaBoss -= 5;
+            console.log(this.vidaBoss);
             bala.destroy();
             jefe.setVelocityX(0);
             jefe.body.setImmovable(true);
-
+            this.vidaText.setText('Vida: ' + this.vidaBoss);
+            
         }, null, this); 
 
         this.physics.add.collider(this.superBullets, this.boss, (jefe, bala)=>{
-            vidaBoss -= 10;
-            console.log(vidaBoss);
+            this.vidaBoss -= 10;
+            console.log(this.vidaBoss);
             bala.destroy();
             jefe.setVelocityX(0);
             jefe.body.setImmovable(true);
+            this.vidaText.setText('Vida: ' + this.vidaBoss);
         }, null, this); 
-        */
+
         this.cursors = this.input.keyboard.createCursorKeys();
         //console.log(this.canvas.width);
     }
