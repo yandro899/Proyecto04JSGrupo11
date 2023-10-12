@@ -4,17 +4,18 @@ export class Scenelose extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image('fondoperdiste', '../../public.img/perdiste.png');
-        this.load.image('botonreiniciar', '../../public.img/botonreiniciar.png');
-        this.load.image('botonmenu', '../../public.img/botonmenu.png');
+        this.load.image('fondoperdiste', '../../public/img/perdiste.png');
+        this.load.image('botonreiniciar', '../../public/img/botonreiniciar.png');
+        this.load.image('botonmenu', '../../public/img/botonmenu.png');
     }
 
     create() {
-        this.add.image(400,150,'fondoperdiste');
+        this.add.image(400,300,'fondoperdiste');
         this.botonreiniciar = this.add.image(200,400,'botonreiniciar').setInteractive();
         this.botonreiniciar.on('pointerdown', () =>{
             //cambia a la escena 1
-            this.scene.start('Scene1');
+            //this.scene.start('Scene1');
+            this.scene.start('Scene2');
         });
 
         this.botonmenu = this.add.image(600,400,'botonmenu').setInteractive();
