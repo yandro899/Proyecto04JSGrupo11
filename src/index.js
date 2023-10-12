@@ -1,3 +1,4 @@
+import {  Menu  } from "./scenes/menu.js";
 import { Scene1 } from "./scenes/scene1.js";
 import { Scene2 } from "./scenes/scene2.js";
 
@@ -17,7 +18,7 @@ let config ={
             },
 
     //aqui agregar sus escenas
-    scene:[Scene1, Scene2]
+    scene:[Menu, Scene1, Scene2]
 
 }
 let game = new Phaser.Game(config);
