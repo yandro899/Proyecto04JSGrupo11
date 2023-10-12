@@ -4,7 +4,7 @@ import { Scenewin } from "./scenes/scenewin.js";
 import { Scenelose } from "./scenes/scenelose.js";
 
 
-let config ={
+let config = {
     type: Phaser.CANVAS,
     scale: {
         mode: Phaser.Scale.FIT,
@@ -14,14 +14,16 @@ let config ={
         height: 600
     },
 
-            physics:{
-                default:'arcade',
-                arcade: { gravity:{y:0} }
-            },
+    physics: {
+        default: 'arcade',
+        arcade: {
+            gravity: { y: 0 },
+            debug: false
+        }
+    },
 
     //aqui agregar sus escenas
-    scene:[Scene2]
-    //scene:[Scene1, Scene2, Scenelose, Scenewin]
+    scene:[Scene2, Scenelose, Scenewin]
 }
 let game = new Phaser.Game(config);
 

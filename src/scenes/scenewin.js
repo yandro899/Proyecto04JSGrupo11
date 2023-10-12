@@ -5,12 +5,12 @@ export class Scenewin extends Phaser.Scene {
 
 
     preload() {
-        this.load.image('fondoganaste', '../../public.img/ganaste.png');
-        this.load.image('botonmenu', '../../public.img/botonmenu.png');
+        this.load.image('fondoganaste', '../../public/img/ganaste.png');
+        this.load.image('botonmenu', '../../public/img/botonmenu.png');
     }
 
     create() {
-        this.add.image(400,150,'fondoganaste');
+        this.add.image(400,300,'fondoganaste');
         this.botonmenu = this.add.image(400,400,'botonmenu').setInteractive();
         this.botonmenu.on('pointerdown', () =>{
             //cambiar a la escena menu(aun no creada)

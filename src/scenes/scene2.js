@@ -1,7 +1,9 @@
 export class Scene2 extends Phaser.Scene{
 
     vidaText="";
+    puntosText="";
     vidaBoss = 500;
+    puntos = 0;
 
     constructor()
     {
@@ -25,28 +27,33 @@ export class Scene2 extends Phaser.Scene{
     create(){
         this.add.image(400, 300, 'noche');
 
-        // Cooldowns
+        // Cooldowns disparos player
         this.cooldownBullet = {
-            cooldown:   200,
+            cooldown:   100,
             nextTimeShoot: 0
         };
         this.cooldownSuperBullet = {
             cooldown:   5000,
             nextTimeShoot: 0
         }
+        this.countSuperHits = 0;
+
+        // Proxima aparicion enemigos
         this.nextEnemySpawn = 0;
 
-        //crea las particulas
+        //crea las particulas del jugador
         const particles = this.add.particles(-10, 0, 'fire', {
             speed: 100,
             angle: {min: 150, max: 210},
             scale: { start: 1, end: 2 },
             blendMode: 'ADD'
         });
-        this.add.particles()
-        // balas
+        
+        // balas jugador
         this.bullets = this.physics.add.group();
         this.superBullets = this.physics.add.group();
+
+        // Balas enemigo
         this.enemyBullets = this.physics.add.group();
         this.superEnemyBullets = this.physics.add.group();
 
@@ -60,15 +67,13 @@ export class Scene2 extends Phaser.Scene{
         // Para obtener las teclas es 'keydown-[tecla]' donde se encuentra en
         // https://newdocs.phaser.io/docs/3.60.0/Phaser.Input.Keyboard.KeyCodes
 
-        
-        //Ejecucion de disparos
+        //Ejecucion de disparos jugador
         this.input.keyboard.on('keydown-SPACE', ()=> {
             let nextBulletShoot = this.cooldownBullet.nextTimeShoot;
             if (nextBulletShoot>this.game.getTime())
                 return;
             let bala = this.bullets.create(this.player.x+10, this.player.y, 'bala');
             this.cooldownBullet.nextTimeShoot = this.cooldownBullet.cooldown+this.game.getTime();
-
             bala.setVelocityX(500);
         }, this);
 
@@ -81,16 +86,16 @@ export class Scene2 extends Phaser.Scene{
             bala.setVelocityX(200);
         }, this);
 
+        // Instancia al jugador
         this.player = this.physics.add.sprite(100,100,'nave2');
         this.playerLifeSystem = {
             health: 100,
             nextTimeDamaged: 0
         };
         this.player.setCollideWorldBounds(true);
-
         particles.startFollow(this.player);
 
-        //crea animaciones de la nave
+        //crea animaciones de la nave jugador
         this.anims.create({
             key: 'stand',
             frames: this.anims.generateFrameNumbers('nave2', { start: 0, end: 1 }),
@@ -107,7 +112,7 @@ export class Scene2 extends Phaser.Scene{
             frameRate: 10,
         });
         
-        //crea al jefe
+        //crea al jefe pero esta oculto hasta que llegue el momento de su aparicion
         this.boss = this.physics.add.image(1000,100, 'boss');
         this.boss.setBounce(1);  
         this.bossStart = false; 
@@ -118,8 +123,10 @@ export class Scene2 extends Phaser.Scene{
             superShootCooldown: 10000
         };
 
-        this.vidaText = this.add.text(16, 16, 'Vida: 0', { fontSize: '20px', fill: '#fff' });
-        this.vidaPlayerText = this.add.text(500, 16, 'Vida Jugador: 100', { fontSize: '20px', fill: '#fff' });
+        // Textos
+        this.vidaText = this.add.text(16, 16, ' ', { fontSize: '20px', fill: '#fff' });
+        this.vidaPlayerText = this.add.text(500, 16, 'Vida Jugador: 100 ', { fontSize: '50px', fill: '#fff' });
+        this.puntosText = this.add.text(16, 0, 'Puntos: 0', { fontSize: '20px', fill: '#fff' });
 
         //detecta las coliciones entre las balas y enemigos
         this.physics.add.overlap(this.bullets, this.enemies2, (bala, enemigo)=>{
@@ -131,28 +138,41 @@ export class Scene2 extends Phaser.Scene{
             });
             bala.destroy();
             enemigo.destroy();
+            this.puntos += 10;
+            this.puntosText.setText('Puntos: ' + this.puntos);
 
         }, null, this);
         this.physics.add.overlap(this.superBullets, this.enemies2, (bala, enemigo)=>{
             enemigo.destroy();
+            this.puntos += 10*Math.pow(2,this.countSuperHits);
+            this.countSuperHits++;
+            this.puntosText.setText('Puntos: ' + this.puntos);
         }, null, this);
 
         
         // colicion de las balas con el jefe y disminuye vida
-        
         this.physics.add.overlap(this.bullets, this.boss, (jefe, bala)=>{
+            if (!this.bossStart)
+                return;
             this.vidaBoss -= 5;
             bala.destroy();
-            this.vidaText.setText('Vida: ' + this.vidaBoss);
+            this.vidaText.setText('Vida Jefe: ' + this.vidaBoss);
+            this.puntos += 10;
+            this.puntosText.setText('Puntos: ' + this.puntos);
             
         }, null, this); 
-
         this.physics.add.overlap(this.superBullets, this.boss, (jefe, bala)=>{
+            if (!this.bossStart)
+                return;
             this.vidaBoss -= 30;
             bala.destroy();
-            this.vidaText.setText('Vida: ' + this.vidaBoss);
+            this.vidaText.setText('Vida Jefe: ' + this.vidaBoss);
+            this.puntos += 10*Math.pow(2,this.countSuperHits);
+            this.countSuperHits = 0;
+            this.puntosText.setText('Puntos: ' + this.puntos);
         }, null, this); 
 
+        // Colisiones del jugador con los enemigos basicos
         this.physics.add.overlap(this.player, this.enemies2, (player, enemy)=>{
             if (this.playerLifeSystem.nextTimeDamaged > this.game.getTime())
                 return;
@@ -161,6 +181,7 @@ export class Scene2 extends Phaser.Scene{
             this.playerLifeSystem.nextTimeDamaged = this.game.getTime() + 1000;
         }, null, this);
 
+        // Colision del jugador con las balas enemigas
         this.physics.add.overlap(this.player, this.enemyBullets, (player, bullet)=>{
             if (this.playerLifeSystem.nextTimeDamaged > this.game.getTime())
                 return;
@@ -169,6 +190,7 @@ export class Scene2 extends Phaser.Scene{
             this.playerLifeSystem.nextTimeDamaged = this.game.getTime() + 1000;
         }, null, this);
 
+        // Colision del jugador con las super balas enemigas
         this.physics.add.overlap(this.player, this.superEnemyBullets, (player, bullet)=>{
             if (this.playerLifeSystem.nextTimeDamaged > this.game.getTime())
                 return;
@@ -177,12 +199,17 @@ export class Scene2 extends Phaser.Scene{
             this.playerLifeSystem.nextTimeDamaged = this.game.getTime() + 1000;
         }, null, this);
 
+        // Entrada por flechas del teclado
         this.cursors = this.input.keyboard.createCursorKeys();
-        //console.log(this.canvas.width);
     }
 
     updatePlayerHealth() {
-        this.vidaPlayerText.setText('Vida Jugador: ' + this.playerLifeSystem.health);
+        this.vidaPlayerText.destroy();
+        let vidaTexto = 'HP: ' + this.playerLifeSystem.health;
+        if (this.playerLifeSystem.nextTimeDamaged < this.game.getTime())
+            this.vidaPlayerText = this.add.text(500, 16, vidaTexto, { fontSize: '50px', fill: '#fff' });
+        else
+            this.vidaPlayerText = this.add.text(500, 16, vidaTexto, { fontSize: '50px', fill: '#f00' });
     }
 
     update(time) {
@@ -194,12 +221,15 @@ export class Scene2 extends Phaser.Scene{
 
         this.superBullets.children.iterate((children)=>{
             if(children && children.x > this.canvas.width)
+            {
                 children.destroy();
+                this.countSuperHits = 0;
+            }
         });
 
         // Think enemies
         if (this.enemies2Count.count < this.enemies2Count.max*2 &&
-            this.enemies2.countActive(true) < 10 || this.enemies2.countActive(true) < 6)
+            this.enemies2.countActive(true) < 10 || this.bossStart && this.enemies2.countActive(true) < 5)
         {
             if (this.nextEnemySpawn <= time)
             {
@@ -240,15 +270,17 @@ export class Scene2 extends Phaser.Scene{
         if (this.enemies2Count.count >= this.enemies2Count.max*2)
         {
             if (this.boss.x > 700)
-                this.boss.setVelocityX(-100);
+                this.boss.setVelocityX(-50);
             else if (!this.bossStart){
                 this.boss.setVelocityX(0);
                 this.boss.setCollideWorldBounds(true);
                 this.boss.setVelocityY(200);
+                this.vidaText.setText('Vida Jefe: ' + this.vidaBoss);
                 this.bossStart = true;
             }
 
         }
+        // Cuando el jefe esta listo para atacar
         if (this.bossStart)
         {
             // Setear primer super disparo
@@ -326,9 +358,24 @@ export class Scene2 extends Phaser.Scene{
         }
         if (this.cursors.down.isDown ) {
             this.player.setVelocityY(velocity);
-            this.player.anims.play('down', true);
+            this.player.anims.play('down', true); 
         }
-        this.updatePlayerHealth()
+        this.updatePlayerHealth();
+
+        // Condiciones de victoria y derrota
+        // Victoria
+        if(this.vidaBoss <= 0){
+            let pasarPuntos = this.puntos;
+            this.puntos = 0;
+            this.scene.start('ganaste',{puntos:pasarPuntos});
+        }
+        // Derrota
+        if(this.playerLifeSystem.health <= 0){
+            let pasarPuntos = this.puntos;
+            this.puntos = 0;
+            this.scene.start('perdiste',{puntos:pasarPuntos});
+        }
+
     }
 
 }
