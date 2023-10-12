@@ -1,5 +1,8 @@
 export class Scene2 extends Phaser.Scene{
 
+    vidaText="";
+    vidaBoss = 500;
+
     constructor()
     {
         super("Scene2");
@@ -10,10 +13,12 @@ export class Scene2 extends Phaser.Scene{
         
         this.load.spritesheet('nave2','../public/img/nave2.png',{ frameWidth: 71, frameHeight: 62 });
         this.load.spritesheet('enemy2','../public/img/enemy2.png',{ frameWidth: 70, frameHeight: 62 });
+        this.load.image('boss','../public/img/naveGrande.png');
         this.load.image('noche', '../../public/img/nigth.png');
         this.load.image('fire', '../../public/img/yellow.png');
         this.load.image('bigshoot', '../../public/img/bigshoot.png');
         this.load.image('bala', '../../public/img/shoot.png');
+        this.load.image('disparoEnemigo', '../../public/img/shootEnemy.png')
     }
 
     create(){
@@ -37,6 +42,7 @@ export class Scene2 extends Phaser.Scene{
         // balas
         this.bullets = this.physics.add.group();
         this.superBullets = this.physics.add.group();
+        this.enemyBullets = this.physics.add.group();
 
         // Enemigos basicos
         this.enemies2 = this.physics.add.group();
@@ -45,6 +51,7 @@ export class Scene2 extends Phaser.Scene{
         // https://newdocs.phaser.io/docs/3.60.0/Phaser.Input.Keyboard.KeyCodes
 
         
+        //Ejecucion de disparos
         this.input.keyboard.on('keydown-SPACE', ()=> {
             let bala = this.bullets.create(this.player.x+10, this.player.y, 'bala');
             bala.setVelocityX(500);
@@ -60,7 +67,9 @@ export class Scene2 extends Phaser.Scene{
         }, this);
 
         this.player = this.physics.add.sprite(100,100,'nave2');
+
         this.player.setCollideWorldBounds(true);
+
         particles.startFollow(this.player);
 
         //crea animaciones de la nave
@@ -80,6 +89,20 @@ export class Scene2 extends Phaser.Scene{
             frameRate: 10,
         });
         
+        // COMENTADO PARA AGREGAR MAS TARDE
+        //crea al jefe
+        
+        this.boss = this.physics.add.image(700,100, 'boss');
+        
+        this.boss.setCollideWorldBounds(true);
+        this.boss.setVelocityY(200);
+        this.boss.setBounce(1);   
+
+        this.vidaText = this.add.text(16, 16, 'Vida: 0', { fontSize: '20px', fill: '#fff' });
+
+        
+
+        //detecta las coliciones tre las balas y enemigos
         this.physics.add.collider(this.bullets, this.enemies2, (bala, enemigo)=>{
             this.add.particles(bala.x, bala.y, 'fire', {
                 speed: 150,
@@ -97,8 +120,30 @@ export class Scene2 extends Phaser.Scene{
             bala.setVelocityY(0);
         }, null, this);
 
+        
+        // colicion de las balas con el jefe y disminuye vida
+        
+        this.physics.add.collider(this.bullets, this.boss, (jefe, bala)=>{
+            this.vidaBoss -= 5;
+            console.log(this.vidaBoss);
+            bala.destroy();
+            jefe.setVelocityX(0);
+            jefe.body.setImmovable(true);
+            this.vidaText.setText('Vida: ' + this.vidaBoss);
+            
+        }, null, this); 
+
+        this.physics.add.collider(this.superBullets, this.boss, (jefe, bala)=>{
+            this.vidaBoss -= 10;
+            console.log(this.vidaBoss);
+            bala.destroy();
+            jefe.setVelocityX(0);
+            jefe.body.setImmovable(true);
+            this.vidaText.setText('Vida: ' + this.vidaBoss);
+        }, null, this); 
+
         this.cursors = this.input.keyboard.createCursorKeys();
-        console.log(this.canvas.width);
+        //console.log(this.canvas.width);
     }
 
     update() {
@@ -126,7 +171,7 @@ export class Scene2 extends Phaser.Scene{
         this.enemies2.children.iterate((children)=>{
             if(children && children.x < -20)
                 children.destroy();
-        });
+        });     
 
         // Movimiento player
         let velocity = 200;
