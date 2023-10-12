@@ -1,5 +1,8 @@
 import { Scene1 } from "./scenes/scene1.js";
 import { Scene2 } from "./scenes/scene2.js";
+import { Scenewin } from "./scenes/scenewin.js";
+import { Scenelose } from "./scenes/scenelose.js";
+
 
 let config ={
     type: Phaser.CANVAS,
@@ -17,7 +20,7 @@ let config ={
             },
 
     //aqui agregar sus escenas
-    scene:[Scene1, Scene2]
+    scene:[Scene1, Scene2, Scenelose, Scenewin]
 
 }
 let game = new Phaser.Game(config);
