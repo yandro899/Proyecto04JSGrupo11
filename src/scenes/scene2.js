@@ -26,8 +26,12 @@ export class Scene2 extends Phaser.Scene{
         this.add.image(400, 300, 'noche');
 
         // Cooldowns
+        this.cooldownBullet = {
+            cooldown:   200,
+            nextTimeShoot: 0
+        };
         this.cooldownSuperBullet = {
-            cooldown:   5,
+            cooldown:   5000,
             nextTimeShoot: 0
         }
         this.nextEnemySpawn = 0;
@@ -59,7 +63,12 @@ export class Scene2 extends Phaser.Scene{
         
         //Ejecucion de disparos
         this.input.keyboard.on('keydown-SPACE', ()=> {
+            let nextBulletShoot = this.cooldownBullet.nextTimeShoot;
+            if (nextBulletShoot>this.game.getTime())
+                return;
             let bala = this.bullets.create(this.player.x+10, this.player.y, 'bala');
+            this.cooldownBullet.nextTimeShoot = this.cooldownBullet.cooldown+this.game.getTime();
+
             bala.setVelocityX(500);
         }, this);
 
@@ -68,7 +77,7 @@ export class Scene2 extends Phaser.Scene{
             if (nextSuperBulletShoot>this.game.getTime())
                 return;
             let bala = this.superBullets.create(this.player.x+10, this.player.y, 'bigshoot');
-            this.cooldownSuperBullet.nextTimeShoot = this.cooldownSuperBullet.cooldown*1000+this.game.getTime();
+            this.cooldownSuperBullet.nextTimeShoot = this.cooldownSuperBullet.cooldown+this.game.getTime();
             bala.setVelocityX(200);
         }, this);
 
@@ -149,6 +158,22 @@ export class Scene2 extends Phaser.Scene{
                 return;
             enemy.destroy();
             this.playerLifeSystem.health = this.playerLifeSystem.health - 5;
+            this.playerLifeSystem.nextTimeDamaged = this.game.getTime() + 1000;
+        }, null, this);
+
+        this.physics.add.overlap(this.player, this.enemyBullets, (player, bullet)=>{
+            if (this.playerLifeSystem.nextTimeDamaged > this.game.getTime())
+                return;
+            bullet.destroy();
+            this.playerLifeSystem.health = this.playerLifeSystem.health - 5;
+            this.playerLifeSystem.nextTimeDamaged = this.game.getTime() + 1000;
+        }, null, this);
+
+        this.physics.add.overlap(this.player, this.superEnemyBullets, (player, bullet)=>{
+            if (this.playerLifeSystem.nextTimeDamaged > this.game.getTime())
+                return;
+            bullet.destroy();
+            this.playerLifeSystem.health = this.playerLifeSystem.health - 15;
             this.playerLifeSystem.nextTimeDamaged = this.game.getTime() + 1000;
         }, null, this);
 
@@ -238,12 +263,12 @@ export class Scene2 extends Phaser.Scene{
                     bala.setVelocityX(-400);
                 }
                 this.bossShootManager.nextSimpleShootTime = this.bossShootManager.simpleShootCooldown + time;
-                this.bossShootManager.simpleShootCooldown = Phaser.Math.Between(100,500);
+                this.bossShootManager.simpleShootCooldown = Phaser.Math.Between(400,500);
             }
             // Disparo sencundario y potente
             if (this.bossShootManager.nextSuperShootTime < time)
             {
-                for (let i=0; i<3; i++)
+                for (let i=0; i<5; i++)
                 {
                     let direccionX = -212.13;
                     let direccionY = 212.13;
@@ -254,6 +279,14 @@ export class Scene2 extends Phaser.Scene{
                         case 1:
                             direccionX = -300;
                             direccionY = 0;
+                            break;
+                        case 2:
+                            direccionX = -260;
+                            direccionY = -150;
+                            break;
+                        case 3:
+                            direccionX = -260;
+                            direccionY = 150;
                             break;
                         default:
                             
