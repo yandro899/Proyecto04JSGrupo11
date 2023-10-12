@@ -18,7 +18,8 @@ export class Scene2 extends Phaser.Scene{
         this.load.image('fire', '../../public/img/yellow.png');
         this.load.image('bigshoot', '../../public/img/bigshoot.png');
         this.load.image('bala', '../../public/img/shoot.png');
-        this.load.image('disparoEnemigo', '../../public/img/shootEnemy.png')
+        this.load.image('disparoEnemigo', '../../public/img/shootEnemy.png');
+        this.load.image('superDisparoEnemigo', '../../public/img/red.png');
     }
 
     create(){
@@ -43,6 +44,7 @@ export class Scene2 extends Phaser.Scene{
         this.bullets = this.physics.add.group();
         this.superBullets = this.physics.add.group();
         this.enemyBullets = this.physics.add.group();
+        this.superEnemyBullets = this.physics.add.group();
 
         // Enemigos basicos
         this.enemies2 = this.physics.add.group();
@@ -73,7 +75,7 @@ export class Scene2 extends Phaser.Scene{
         this.player = this.physics.add.sprite(100,100,'nave2');
         this.playerLifeSystem = {
             health: 100,
-            lastTimeDamaged: 0
+            nextTimeDamaged: 0
         };
         this.player.setCollideWorldBounds(true);
 
@@ -96,19 +98,21 @@ export class Scene2 extends Phaser.Scene{
             frameRate: 10,
         });
         
-        // COMENTADO PARA AGREGAR MAS TARDE
         //crea al jefe
-        
-        this.boss = this.physics.add.image(700,100, 'boss');
-        
-        this.boss.setCollideWorldBounds(true);
-        this.boss.setVelocityY(200);
-        this.boss.setBounce(1);   
+        this.boss = this.physics.add.image(1000,100, 'boss');
+        this.boss.setBounce(1);  
+        this.bossStart = false; 
+        this.bossShootManager = {
+            nextSimpleShootTime: 0,
+            simpleShootCooldown: 500,
+            nextSuperShootTime: 0,
+            superShootCooldown: 10000
+        };
 
         this.vidaText = this.add.text(16, 16, 'Vida: 0', { fontSize: '20px', fill: '#fff' });
         this.vidaPlayerText = this.add.text(500, 16, 'Vida Jugador: 100', { fontSize: '20px', fill: '#fff' });
 
-        //detecta las coliciones tre las balas y enemigos
+        //detecta las coliciones entre las balas y enemigos
         this.physics.add.overlap(this.bullets, this.enemies2, (bala, enemigo)=>{
             this.add.particles(bala.x, bala.y, 'fire', {
                 speed: 150,
@@ -129,7 +133,6 @@ export class Scene2 extends Phaser.Scene{
         
         this.physics.add.overlap(this.bullets, this.boss, (jefe, bala)=>{
             this.vidaBoss -= 5;
-            console.log(this.vidaBoss);
             bala.destroy();
             this.vidaText.setText('Vida: ' + this.vidaBoss);
             
@@ -137,25 +140,27 @@ export class Scene2 extends Phaser.Scene{
 
         this.physics.add.overlap(this.superBullets, this.boss, (jefe, bala)=>{
             this.vidaBoss -= 30;
-            console.log(this.vidaBoss);
             bala.destroy();
             this.vidaText.setText('Vida: ' + this.vidaBoss);
         }, null, this); 
 
         this.physics.add.overlap(this.player, this.enemies2, (player, enemy)=>{
-            if (this.playerLifeSystem.lastTimeDamaged > this.game.getTime())
+            if (this.playerLifeSystem.nextTimeDamaged > this.game.getTime())
                 return;
             enemy.destroy();
-            this.playerLifeSystem.health = this.playerLifeSystem.health - 10;
-            this.vidaPlayerText.setText('Vida Jugador: ' + this.playerLifeSystem.health);
-            this.playerLifeSystem.lastTimeDamaged = this.game.getTime() + 1000;
+            this.playerLifeSystem.health = this.playerLifeSystem.health - 5;
+            this.playerLifeSystem.nextTimeDamaged = this.game.getTime() + 1000;
         }, null, this);
 
         this.cursors = this.input.keyboard.createCursorKeys();
         //console.log(this.canvas.width);
     }
 
-    update() {
+    updatePlayerHealth() {
+        this.vidaPlayerText.setText('Vida Jugador: ' + this.playerLifeSystem.health);
+    }
+
+    update(time) {
         // Las balas que salgan del mapa se borran
         this.bullets.children.iterate((children)=>{
             if(children && children.x > this.canvas.width)
@@ -169,11 +174,11 @@ export class Scene2 extends Phaser.Scene{
 
         // Think enemies
         if (this.enemies2Count.count < this.enemies2Count.max*2 &&
-            this.enemies2.countActive(true) < 10)
+            this.enemies2.countActive(true) < 10 || this.enemies2.countActive(true) < 6)
         {
-            if (this.nextEnemySpawn <= this.game.getTime())
+            if (this.nextEnemySpawn <= time)
             {
-                let enemy = this.enemies2.create(900, Phaser.Math.Between(100, 500), 'enemy2');
+                let enemy = this.enemies2.create(900, Phaser.Math.Between(50, 550), 'enemy2');
                 enemy.setVelocityX(-200)
                 this.enemies2Count.count++;
                 
@@ -184,7 +189,7 @@ export class Scene2 extends Phaser.Scene{
                         enemy.setVelocityY(Phaser.Math.Between(-200,200));
                         enemy.setVelocityX(Phaser.Math.Between(-200, -400))
                     }
-                this.nextEnemySpawn = this.game.getTime() + Phaser.Math.Between(150, 400)       
+                this.nextEnemySpawn = time + Phaser.Math.Between(150, 400)       
             }
         }
 
@@ -205,6 +210,68 @@ export class Scene2 extends Phaser.Scene{
             if(children && children.x < -20)
                 children.destroy();
         });     
+
+        //Think boss
+        if (this.enemies2Count.count >= this.enemies2Count.max*2)
+        {
+            if (this.boss.x > 700)
+                this.boss.setVelocityX(-100);
+            else if (!this.bossStart){
+                this.boss.setVelocityX(0);
+                this.boss.setCollideWorldBounds(true);
+                this.boss.setVelocityY(200);
+                this.bossStart = true;
+            }
+
+        }
+        if (this.bossStart)
+        {
+            // Setear primer super disparo
+            if (this.bossShootManager.nextSuperShootTime == 0)
+                this.bossShootManager.nextSuperShootTime = time + this.bossShootManager.superShootCooldown;
+            // Disparo principal
+            if (this.bossShootManager.nextSimpleShootTime < time)
+            {
+                for (let i=0; i<2; i++)
+                {
+                    let bala = this.enemyBullets.create(this.boss.x-25, this.boss.y+(i==0 ? 1: -1)*50, 'disparoEnemigo');
+                    bala.setVelocityX(-400);
+                }
+                this.bossShootManager.nextSimpleShootTime = this.bossShootManager.simpleShootCooldown + time;
+                this.bossShootManager.simpleShootCooldown = Phaser.Math.Between(100,500);
+            }
+            // Disparo sencundario y potente
+            if (this.bossShootManager.nextSuperShootTime < time)
+            {
+                for (let i=0; i<3; i++)
+                {
+                    let direccionX = -212.13;
+                    let direccionY = 212.13;
+                    switch (i){
+                        case 0:
+                            direccionY *= -1;
+                            break;
+                        case 1:
+                            direccionX = -300;
+                            direccionY = 0;
+                            break;
+                        default:
+                            
+                    }
+                    
+                    let bala = this.enemyBullets.create(this.boss.x-45, this.boss.y, 'superDisparoEnemigo');
+                    bala.setVelocityX(direccionX);
+                    bala.setVelocityY(direccionY);
+                }
+                this.bossShootManager.nextSuperShootTime = this.bossShootManager.superShootCooldown + time;
+            }
+
+        }
+        this.enemyBullets.children.iterate((children)=>{
+            if(children && children.x < 0)
+                children.destroy();
+        });
+
 
         // Movimiento player
         let velocity = 200;
@@ -228,6 +295,7 @@ export class Scene2 extends Phaser.Scene{
             this.player.setVelocityY(velocity);
             this.player.anims.play('down', true);
         }
+        this.updatePlayerHealth()
     }
 
 }
