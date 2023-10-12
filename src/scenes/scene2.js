@@ -2,7 +2,7 @@ export class Scene2 extends Phaser.Scene{
 
     vidaText="";
     puntosText="";
-    vidaBoss = 500;
+    vidaBoss = 100;
     puntos = 0;
 
     constructor()
@@ -15,6 +15,8 @@ export class Scene2 extends Phaser.Scene{
         
         this.load.spritesheet('nave2','../public/img/nave2.png',{ frameWidth: 71, frameHeight: 62 });
         this.load.spritesheet('enemy2','../public/img/enemy2.png',{ frameWidth: 70, frameHeight: 62 });
+        this.load.spritesheet('explosion','../public/img/explosion.png',{ frameWidth: 30, frameHeight: 30 });
+        this.load.spritesheet('dano','../public/img/navedaño.png',{ frameWidth: 71, frameHeight: 62 });
         this.load.image('boss','../public/img/naveGrande.png');
         this.load.image('noche', '../../public/img/nigth.png');
         this.load.image('fire', '../../public/img/yellow.png');
@@ -128,18 +130,20 @@ export class Scene2 extends Phaser.Scene{
         this.vidaPlayerText = this.add.text(500, 16, 'Vida Jugador: 100 ', { fontSize: '50px', fill: '#fff' });
         this.puntosText = this.add.text(16, 0, 'Puntos: 0', { fontSize: '20px', fill: '#fff' });
 
+        this.anims.create({
+            key: 'explotar',
+            frames: this.anims.generateFrameNumbers('explosion', { start: 0, end: 5 }),
+            frameRate: 10,
+        });
+
         //detecta las coliciones entre las balas y enemigos
         this.physics.add.overlap(this.bullets, this.enemies2, (bala, enemigo)=>{
-            this.add.particles(bala.x, bala.y, 'fire', {
-                speed: 150,
-                scale: { start: 1, end: 1.5 },
-                blendMode: 'ADD',
-                duration: 200
-            });
             bala.destroy();
             enemigo.destroy();
             this.puntos += 10;
             this.puntosText.setText('Puntos: ' + this.puntos);
+            this.exp = this.add.sprite(bala.x + 30, bala.y, 'explosion');
+            this.exp.anims.play('explotar', true);
 
         }, null, this);
         this.physics.add.overlap(this.superBullets, this.enemies2, (bala, enemigo)=>{
@@ -147,6 +151,8 @@ export class Scene2 extends Phaser.Scene{
             this.puntos += 10*Math.pow(2,this.countSuperHits);
             this.countSuperHits++;
             this.puntosText.setText('Puntos: ' + this.puntos);
+            this.exp = this.add.sprite(bala.x + 30, bala.y, 'explosion');
+            this.exp.anims.play('explotar', true);
         }, null, this);
 
         
@@ -159,8 +165,10 @@ export class Scene2 extends Phaser.Scene{
             this.vidaText.setText('Vida Jefe: ' + this.vidaBoss);
             this.puntos += 10;
             this.puntosText.setText('Puntos: ' + this.puntos);
-            
+            this.exp = this.add.sprite(bala.x + 30, bala.y, 'explosion');
+            this.exp.anims.play('explotar', true);
         }, null, this); 
+
         this.physics.add.overlap(this.superBullets, this.boss, (jefe, bala)=>{
             if (!this.bossStart)
                 return;
@@ -170,6 +178,8 @@ export class Scene2 extends Phaser.Scene{
             this.puntos += 10*Math.pow(2,this.countSuperHits);
             this.countSuperHits = 0;
             this.puntosText.setText('Puntos: ' + this.puntos);
+            this.exp = this.add.sprite(bala.x + 30, bala.y, 'explosion');
+            this.exp.anims.play('explotar', true);
         }, null, this); 
 
         // Colisiones del jugador con los enemigos basicos
@@ -199,6 +209,22 @@ export class Scene2 extends Phaser.Scene{
             this.playerLifeSystem.nextTimeDamaged = this.game.getTime() + 1000;
         }, null, this);
 
+        this.anims.create({
+            key: 'danoStand',
+            frames: [ { key: 'dano', frame: 0 } ],
+            frameRate: 10,
+        });
+        this.anims.create({
+            key: 'danoUp',
+            frames: [ { key: 'dano', frame: 1 } ],
+            frameRate: 10,
+        });
+        this.anims.create({
+            key: 'danoDown',
+            frames: [ { key: 'dano', frame: 2 } ],
+            frameRate: 10,
+        });
+
         // Entrada por flechas del teclado
         this.cursors = this.input.keyboard.createCursorKeys();
     }
@@ -208,8 +234,11 @@ export class Scene2 extends Phaser.Scene{
         let vidaTexto = 'HP: ' + this.playerLifeSystem.health;
         if (this.playerLifeSystem.nextTimeDamaged < this.game.getTime())
             this.vidaPlayerText = this.add.text(500, 16, vidaTexto, { fontSize: '50px', fill: '#fff' });
-        else
+        else{
             this.vidaPlayerText = this.add.text(500, 16, vidaTexto, { fontSize: '50px', fill: '#f00' });
+            //this.danio = this.add.sprite(this.player.x ,this.player.y,'dano');
+        } //agrege lo del daño pero pinta la pantalla
+            
     }
 
     update(time) {
