@@ -17,7 +17,7 @@ export class Scene1 extends Phaser.Scene {
         this.load.image('impact', '../../public/img/orange2.png');
         this.load.audio('laser', '../../public/img/blaster-11.mp3');
         this.load.audio('crash', '../../public/img/crash.mp3');
-        this.load.audio('musica', '../../public/img/bgmlvl1.mp3');
+        this.load.audio('musica', '../../public/sound/msc_boss_fight.mp3');
     }
 
     create() {
