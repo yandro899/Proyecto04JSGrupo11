@@ -232,12 +232,23 @@ export class Scene2 extends Phaser.Scene{
     updatePlayerHealth() {
         this.vidaPlayerText.destroy();
         let vidaTexto = 'HP: ' + this.playerLifeSystem.health;
-        if (this.playerLifeSystem.nextTimeDamaged < this.game.getTime())
+        if (this.playerLifeSystem.nextTimeDamaged < this.game.getTime()){
             this.vidaPlayerText = this.add.text(500, 16, vidaTexto, { fontSize: '50px', fill: '#fff' });
+            if (this.danio)
+            {
+                this.danio.destroy();
+                this.danio = null;
+            }
+        }
         else{
             this.vidaPlayerText = this.add.text(500, 16, vidaTexto, { fontSize: '50px', fill: '#f00' });
-            //this.danio = this.add.sprite(this.player.x ,this.player.y,'dano');
-        } //agrege lo del daño pero pinta la pantalla
+            if (!this.danio)
+            {
+                this.danio = this.add.sprite(this.player.x ,this.player.y,'dano');
+            }
+        }
+        if (this.danio)
+            this.danio.setPosition(this.player.x, this.player.y);
             
     }
 
@@ -374,6 +385,8 @@ export class Scene2 extends Phaser.Scene{
         this.player.setVelocityX(0);
         this.player.setVelocityY(0);
         this.player.anims.play('stand', true);
+        if (this.danio)
+            this.danio.anims.play('danoStand', true);
 
         if (this.cursors.left.isDown) {
             this.player.setVelocityX(-1*velocity);
@@ -384,10 +397,14 @@ export class Scene2 extends Phaser.Scene{
         if (this.cursors.up.isDown){
             this.player.setVelocityY(-1*velocity);
             this.player.anims.play('up', true);
+            if (this.danio)
+                this.danio.anims.play('danoUp', true);
         }
         if (this.cursors.down.isDown ) {
             this.player.setVelocityY(velocity);
             this.player.anims.play('down', true); 
+            if (this.danio)
+                this.danio.anims.play('danoDown', true);
         }
         this.updatePlayerHealth();
 
