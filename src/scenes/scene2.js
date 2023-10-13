@@ -24,7 +24,7 @@ export class Scene2 extends Phaser.Scene{
         this.load.image('disparoEnemigo', '../../public/img/shootEnemy.png');
         this.load.image('superDisparoEnemigo', '../../public/img/red.png');
         this.load.audio('msc_level_2', '../../public/sound/msc_level_2.mp3');
-        this.load.audio('msc_boss_fight', '../../public/sound/msc_boss_fight.mp3');
+        this.load.audio('msc_boss_fight', '../../public/img/bgmlvl1.mp3');
         this.load.audio('laser', '../../public/img/blaster-11.mp3');
         this.load.audio('crash', '../../public/img/crash.mp3');
     }
