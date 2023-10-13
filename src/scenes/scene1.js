@@ -7,11 +7,11 @@ export class Scene1 extends Phaser.Scene {
 
     preload()
     {
-        this.load.spritesheet('nave','../../public/img/nave.png',{frameWidth:70,frameHeight:62});
-        this.load.image('fuego', '../../public/img/red.png');
-        this.load.image('cielo', '../../public/img/sky.png');
-        this.load.image('bala', '../../public/img/shoot.png');
-        this.load.image('enemigo', '../../public/img/enemy.png');
+        this.load.spritesheet('nave','../public/img/nave.png',{frameWidth:70,frameHeight:62});
+        this.load.image('fuego', '../public/img/red.png');
+        this.load.image('cielo', '../public/img/sky.png');
+        this.load.image('bala', '../public/img/shoot.png');
+        this.load.image('enemigo', '../public/img/enemy.png');
     }
 
     create() {
