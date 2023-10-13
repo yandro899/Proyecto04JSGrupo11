@@ -1,13 +1,12 @@
 export class Scene2 extends Phaser.Scene{
 
-    vidaText="";
-    puntosText="";
-    vidaBoss = 500;
-    puntos = 0;
-
     constructor()
     {
         super("Scene2");
+    }
+
+    init(data){
+        this.puntos = data.puntos;
     }
 
     preload(){
@@ -26,10 +25,16 @@ export class Scene2 extends Phaser.Scene{
         this.load.image('superDisparoEnemigo', '../../public/img/red.png');
         this.load.audio('msc_level_2', '../../public/sound/msc_level_2.mp3');
         this.load.audio('msc_boss_fight', '../../public/sound/msc_boss_fight.mp3');
-
+        this.load.audio('laser', '../../public/img/blaster-11.mp3');
+        this.load.audio('crash', '../../public/img/crash.mp3');
     }
 
     create(){
+        console.log('2');
+        this.danio = null;
+        this.vidaText="";
+        this.puntosText="";
+        this.vidaBoss = 500;
         this.add.image(400, 300, 'noche');
         this.bgMusic = this.sound.add('msc_level_2');
         const soundconfig = {
@@ -44,7 +49,11 @@ export class Scene2 extends Phaser.Scene{
                 this.bgMusic.play(soundconfig);
             });
         }
-
+        //sonido para el disparo
+        this.laser = this.sound.add('laser');
+        this.laser.setVolume(0.5);
+        //sonido cuando una nave enemiga impacta al jugador 
+        this.crash = this.sound.add('crash');
 
         // Cooldowns disparos player
         this.cooldownBullet = {
@@ -91,6 +100,7 @@ export class Scene2 extends Phaser.Scene{
             let nextBulletShoot = this.cooldownBullet.nextTimeShoot;
             if (nextBulletShoot>this.game.getTime())
                 return;
+            this.laser.play();
             let bala = this.bullets.create(this.player.x+10, this.player.y, 'bala');
             this.cooldownBullet.nextTimeShoot = this.cooldownBullet.cooldown+this.game.getTime();
             bala.setVelocityX(500);
@@ -144,8 +154,8 @@ export class Scene2 extends Phaser.Scene{
 
         // Textos
         this.vidaText = this.add.text(16, 16, ' ', { fontSize: '20px', fill: '#fff' });
-        this.vidaPlayerText = this.add.text(500, 16, 'Vida Jugador: 100 ', { fontSize: '50px', fill: '#fff' });
-        this.puntosText = this.add.text(16, 0, 'Puntos: 0', { fontSize: '20px', fill: '#fff' });
+        this.vidaPlayerText = this.add.text(500, 16, 'Vida Jugador: 100', { fontSize: '50px', fill: '#fff' });
+        this.puntosText = this.add.text(16, 0, 'Puntos: ' + this.puntos, { fontSize: '20px', fill: '#fff' });
 
         this.anims.create({
             key: 'explotar',
@@ -204,6 +214,7 @@ export class Scene2 extends Phaser.Scene{
             if (this.playerLifeSystem.nextTimeDamaged > this.game.getTime())
                 return;
             enemy.destroy();
+            this.crash.play();
             this.playerLifeSystem.health = this.playerLifeSystem.health - 5;
             this.playerLifeSystem.nextTimeDamaged = this.game.getTime() + 1000;
         }, null, this);
@@ -213,6 +224,7 @@ export class Scene2 extends Phaser.Scene{
             if (this.playerLifeSystem.nextTimeDamaged > this.game.getTime())
                 return;
             bullet.destroy();
+            this.crash.play();
             this.playerLifeSystem.health = this.playerLifeSystem.health - 5;
             this.playerLifeSystem.nextTimeDamaged = this.game.getTime() + 1000;
         }, null, this);
@@ -222,6 +234,7 @@ export class Scene2 extends Phaser.Scene{
             if (this.playerLifeSystem.nextTimeDamaged > this.game.getTime())
                 return;
             bullet.destroy();
+            this.crash.play();
             this.playerLifeSystem.health = this.playerLifeSystem.health - 15;
             this.playerLifeSystem.nextTimeDamaged = this.game.getTime() + 1000;
         }, null, this);
@@ -396,7 +409,7 @@ export class Scene2 extends Phaser.Scene{
                             
                     }
                     
-                    let bala = this.enemyBullets.create(this.boss.x-45, this.boss.y, 'superDisparoEnemigo');
+                    let bala = this.superEnemyBullets.create(this.boss.x-45, this.boss.y, 'superDisparoEnemigo');
                     bala.setVelocityX(direccionX);
                     bala.setVelocityY(direccionY);
                 }

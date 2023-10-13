@@ -1,9 +1,5 @@
 export class Scene1 extends Phaser.Scene {
 
-    lifeText ="";
-    playerLife = 100;
-    scoreText ="";
-    score = 0;
     constructor()
     {
         super("Scene1");
@@ -25,6 +21,11 @@ export class Scene1 extends Phaser.Scene {
     }
 
     create() {
+        console.log('1');
+        this.lifeText ="";
+        this.playerLife = 100;
+        this.scoreText ="";
+        this.score = 0;
         //sonido para el disparo
         this.laser = this.sound.add('laser');
         this.laser.setVolume(0.5);

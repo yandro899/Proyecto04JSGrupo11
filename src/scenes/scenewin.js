@@ -24,7 +24,7 @@ export class Scenewin extends Phaser.Scene {
         this.botonmenu = this.add.image(400,400,'botonmenu').setInteractive();
         this.botonmenu.on('pointerdown', () =>{
             //cambiar a la escena menu(aun no creada)
-            this.scene.start('...');
+            this.scene.start('menu');
         });
     }
 }

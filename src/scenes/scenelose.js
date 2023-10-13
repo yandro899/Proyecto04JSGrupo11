@@ -25,13 +25,13 @@ export class Scenelose extends Phaser.Scene {
         this.botonreiniciar.on('pointerdown', () =>{
             //cambia a la escena 1
             //this.scene.start('Scene1');
-            this.scene.start('Scene2');
+            this.scene.start('Scene1');
         });
 
         this.botonmenu = this.add.image(600,400,'botonmenu').setInteractive();
         this.botonmenu.on('pointerdown', () =>{
             //cambiar a la escena menu(aun no creada)
-            this.scene.start('...');
+            this.scene.start('menu');
         });
     }
 }
