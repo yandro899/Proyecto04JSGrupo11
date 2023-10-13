@@ -2,7 +2,7 @@ export class Scene2 extends Phaser.Scene{
 
     vidaText="";
     puntosText="";
-    vidaBoss = 100;
+    vidaBoss = 500;
     puntos = 0;
 
     constructor()
@@ -24,10 +24,27 @@ export class Scene2 extends Phaser.Scene{
         this.load.image('bala', '../../public/img/shoot.png');
         this.load.image('disparoEnemigo', '../../public/img/shootEnemy.png');
         this.load.image('superDisparoEnemigo', '../../public/img/red.png');
+        this.load.audio('msc_level_2', '../../public/sound/msc_level_2.mp3');
+        this.load.audio('msc_boss_fight', '../../public/sound/msc_boss_fight.mp3');
+
     }
 
     create(){
         this.add.image(400, 300, 'noche');
+        this.bgMusic = this.sound.add('msc_level_2');
+        const soundconfig = {
+            volume: 1,
+            loop: true,
+        }
+
+        if(this.sound.locked){
+            this.bgMusic.play(soundconfig)
+        } else {
+            this.sound.once(Phaser.Sound.Events.UNLOCKED, () => {
+                this.bgMusic.play(soundconfig);
+            });
+        }
+
 
         // Cooldowns disparos player
         this.cooldownBullet = {
@@ -317,6 +334,21 @@ export class Scene2 extends Phaser.Scene{
                 this.boss.setVelocityY(200);
                 this.vidaText.setText('Vida Jefe: ' + this.vidaBoss);
                 this.bossStart = true;
+                this.bgMusic.destroy();
+
+                this.bgMusic = this.sound.add('msc_boss_fight');
+                const soundconfig = {
+                    volume: 1,
+                    loop: true,
+                }
+
+                if(this.sound.locked){
+                    this.bgMusic.play(soundconfig)
+                } else {
+                    this.sound.once(Phaser.Sound.Events.UNLOCKED, () => {
+                        this.bgMusic.play(soundconfig);
+                    });
+                }
             }
 
         }
@@ -335,7 +367,7 @@ export class Scene2 extends Phaser.Scene{
                     bala.setVelocityX(-400);
                 }
                 this.bossShootManager.nextSimpleShootTime = this.bossShootManager.simpleShootCooldown + time;
-                this.bossShootManager.simpleShootCooldown = Phaser.Math.Between(400,500);
+                this.bossShootManager.simpleShootCooldown = Phaser.Math.Between(600,700);
             }
             // Disparo sencundario y potente
             if (this.bossShootManager.nextSuperShootTime < time)
@@ -413,12 +445,14 @@ export class Scene2 extends Phaser.Scene{
         if(this.vidaBoss <= 0){
             let pasarPuntos = this.puntos;
             this.puntos = 0;
+            this.bgMusic.destroy();
             this.scene.start('ganaste',{puntos:pasarPuntos});
         }
         // Derrota
         if(this.playerLifeSystem.health <= 0){
             let pasarPuntos = this.puntos;
             this.puntos = 0;
+            this.bgMusic.destroy();
             this.scene.start('perdiste',{puntos:pasarPuntos});
         }
 
