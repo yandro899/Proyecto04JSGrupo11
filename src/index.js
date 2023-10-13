@@ -24,7 +24,7 @@ let config = {
     },
 
     //aqui agregar sus escenas
-    scene:[Menu, Scene1, Scene2, Scenewin, Scenelose];
+    scene:[Menu, Scene1, Scene2, Scenewin, Scenelose]
 }
 let game = new Phaser.Game(config);
 
