@@ -9,6 +9,7 @@ export class Menu extends Phaser.Scene{
         this.load.image('fondo', '../public/img/fondo-cielo.png');
         this.load.image('botonJugar', '../public/img/boton.png');
         this.load.spritesheet('nave','../public/img/nave.png',{frameWidth:70,frameHeight:62});
+        this.load.spritesheet('naveEnemy','../public/img/enemy2.png',{ frameWidth: 70, frameHeight: 62 });
         this.load.image('fuego', '../public/img/red.png');
       }
     
@@ -23,28 +24,33 @@ export class Menu extends Phaser.Scene{
             blendMode: 'ADD'
         });
   
-        const nave = this.physics.add.image(400, 100, 'nave');
+        const nave = this.physics.add.image(150, 100, 'nave');
         nave.setVelocity(100, 200);
         nave.setBounce(1, 1);
         nave.setCollideWorldBounds(true);
   
         particles.startFollow(nave);
     
-        const nave2 = this.physics.add.image(100, 400, 'nave');
-        nave2.setVelocity(200, 100);
-        nave2.setBounce(1, 1);
-        nave2.setCollideWorldBounds(true);
+        const naveEnemy = this.physics.add.image(600, 200, 'naveEnemy');
+        naveEnemy.setVelocity(200, 100);
+        naveEnemy.setBounce(1, 1);
+        naveEnemy.setCollideWorldBounds(true);
   
-        const nave3 = this.physics.add.image(700, 400, 'nave');
-        nave3.setVelocity(200, 100);
-        nave3.setBounce(1, 1);
-        nave3.setCollideWorldBounds(true);
+        const naveEnemy2 = this.physics.add.image(700, 300, 'naveEnemy');
+        naveEnemy2.setVelocity(200, 100);
+        naveEnemy2.setBounce(1, 1);
+        naveEnemy2.setCollideWorldBounds(true);
+
+        const naveEnemy3 = this.physics.add.image(500, 400, 'naveEnemy');
+        naveEnemy3.setVelocity(200, 100);
+        naveEnemy3.setBounce(1, 1);
+        naveEnemy3.setCollideWorldBounds(true);
   
         //botonsito
         this.botoninicio = this.add.image(400,375,'botonJugar').setInteractive();
         this.botoninicio.on('pointerdown', 
         
-        () =>{ console.log("hola");
+        () =>{ console.log("pium pium");
 
           //nombre de la siguiente escena
           this.scene.start('Scene1');
