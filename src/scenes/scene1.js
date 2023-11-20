@@ -15,8 +15,8 @@ export class Scene1 extends Phaser.Scene {
         this.load.image('bala', '../../public/img/shoot.png');
         this.load.image('fire', '../../public/img/yellow.png');
         this.load.image('impact', '../../public/img/orange2.png');
-        this.load.audio('laser', '../../public/img/blaster-11.mp3');
-        this.load.audio('crash', '../../public/img/crash.mp3');
+        this.load.audio('laser', '../../public/sound/blaster-11.mp3');
+        this.load.audio('crash', '../../public/sound/crash.mp3');
         this.load.audio('musica', '../../public/sound/msc_boss_fight.mp3');
     }
 
@@ -31,7 +31,6 @@ export class Scene1 extends Phaser.Scene {
         this.laser.setVolume(0.5);
         //sonido cuando una nave enemiga impacta al jugador 
         this.crash = this.sound.add('crash');
-        this.laser.setVolume(0.5);
 
         this.musica = this.sound.add('musica');
         this.musica.play();
